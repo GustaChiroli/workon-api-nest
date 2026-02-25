@@ -20,7 +20,7 @@ export class PostsService {
                     }
                 }
             }
-        })
+        });
     }
 
     async createPost(userId: string, caption: string, imageUrl?: string) {
@@ -30,7 +30,7 @@ export class PostsService {
                 caption,
                 imageUrl,
             }
-        })
+        });
     }
 
     async getFollowingFeed(userId: string) {
@@ -61,9 +61,7 @@ export class PostsService {
                     }
                 }
             }
-        }
-
-        );
+        });
     }
 
 }
