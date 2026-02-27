@@ -18,6 +18,18 @@ export class PostsService {
                         likes: true,
                         comments: true,
                     }
+                },
+                comments: {
+                    select: {
+                        user: true,
+                        content: true,
+                        createdAt: true,
+                    }
+                },
+                user: {
+                    select: {
+                        fullName: true,
+                    }
                 }
             }
         });
