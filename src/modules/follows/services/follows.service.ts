@@ -27,4 +27,19 @@ export class FollowsService {
             }
         });
     }
+
+    async deleteFollow(userId: string, followedId: string) {
+        if (userId === followedId) {
+            throw new BadRequestException("Você não pode seguir a si mesmo");
+        }
+        return this.prisma.follow.delete({
+            where: {
+                followerId_followingId: {
+                    followerId: userId,
+                    followingId: followedId,
+                }
+
+            }
+        });
+    }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "src/modules/auth/current-user.decorator";
 import { JwtAuthGuard } from "src/modules/auth/jwt.guard";
 import { FollowsService } from "../services/follows.service";
@@ -19,6 +19,12 @@ export class FollowsController {
     @UseGuards(JwtAuthGuard)
     createFollow(@Req() req, @Body() dto: CreateFollowDto) {
         return this.followsService.createFollow(req.user.id, dto.followingId)
+    }
+
+    @Delete('unfollow/:followingId')
+    @UseGuards(JwtAuthGuard)
+    deleteFollow(@Req() req, @Param('followingId') followingId: string) {
+        return this.followsService.deleteFollow(req.user.id, followingId)
     }
 
 }

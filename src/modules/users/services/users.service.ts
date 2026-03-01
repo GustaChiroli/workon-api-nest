@@ -22,6 +22,44 @@ export class UsersService {
         });
     }
 
+    findByEmail(email: string) {
+        return this.prisma.user.findUnique({
+            where: { email },
+            select: {
+                id: true,
+                email: true,
+                fullName: true,
+                role: true,
+                createdAt: true,
+                following: {
+                    select: {
+                        id: true,
+                        following: {
+                            select: {
+                                fullName: true,
+                                email: true,
+                                id: true,
+                            }
+                        }
+                    }
+                },
+                followers: {
+                    select: {
+                        id: true,
+                        follower: {
+                            select: {
+                                fullName: true,
+                                email: true,
+                                id: true,
+                                followers: true
+                            }
+                        }
+                    }
+                },
+            },
+        });
+    }
+
     async updateUser(userId: string, data: UpdateUserDto) {
         return this.prisma.user.update({
             where: { id: userId },
