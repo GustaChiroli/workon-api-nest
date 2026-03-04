@@ -1,7 +1,8 @@
 
-import { Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { PostsService } from "../services/posts.service";
+import { Body, Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { JwtAuthGuard } from "src/modules/auth/jwt.guard";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { PostsService } from "../services/posts.service";
 
 
 @Controller('posts')
@@ -15,9 +16,21 @@ export class PostsController {
     }
 
     @Post('my-posts')
+    @UseInterceptors(FileInterceptor('image'))
     @UseGuards(JwtAuthGuard)
-    createPost(@Req() req) {
-        return this.postsService.createPost(req.user.id, req.body.caption, req.body.imageUrl);
+    async createPost(
+        @Req() req,
+        @Body('caption') caption: string,
+        @UploadedFile() file?: Express.Multer.File,
+    ) {
+        return this.postsService.createPost(req.user.id, caption, file);
+    }
+
+
+    @Delete('my-posts/:postId')
+    @UseGuards(JwtAuthGuard)
+    deleteFollow(@Req() req, @Param('postId') postId: string) {
+        return this.postsService.deletePost(postId, req.user.id)
     }
 
     @Get('feed')

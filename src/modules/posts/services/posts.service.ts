@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
+import { CloudinaryService } from "src/modules/cloudinary/cloudinary.service";
 import { PrismaService } from "src/prisma/prisma.service";
 
 
 @Injectable()
 export class PostsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService, private cloudinaryService: CloudinaryService) { }
 
     async getMyPosts(userId: string) {
         return this.prisma.post.findMany({
@@ -35,13 +36,40 @@ export class PostsService {
         });
     }
 
-    async createPost(userId: string, caption: string, imageUrl?: string) {
+    async createPost(userId: string, caption: string, file?: Express.Multer.File) {
+        let imageUrl: string | undefined;
+        let publicId: string | undefined;
+
+        if (file) {
+            const uploadResult = await this.cloudinaryService.uploadImage(file);
+            imageUrl = uploadResult.secure_url;
+            publicId = uploadResult.public_id;
+        }
         return this.prisma.post.create({
             data: {
                 userId,
                 caption,
                 imageUrl,
+                imagePublicId: publicId,
             }
+        });
+    }
+
+    async deletePost(postId: string, userId: string) {
+        const post = await this.prisma.post.findUnique({
+            where: { id: postId },
+        });
+
+        if (!post) throw new Error('Post not found');
+
+        if (userId != post.userId) throw new Error('You Can only delete your posts');
+
+        if (post.imagePublicId) {
+            await this.cloudinaryService.deleteImage(post.imagePublicId);
+        }
+
+        return this.prisma.post.delete({
+            where: { id: postId },
         });
     }
 
