@@ -8,7 +8,7 @@ export class PostsService {
     constructor(private prisma: PrismaService, private cloudinaryService: CloudinaryService) { }
 
     async getMyPosts(userId: string) {
-        return this.prisma.post.findMany({
+        const posts = await this.prisma.post.findMany({
             where: {
                 userId: userId
             },
@@ -18,6 +18,14 @@ export class PostsService {
                     select: {
                         likes: true,
                         comments: true,
+                    }
+                },
+                likes: {
+                    where: {
+                        userId: userId
+                    },
+                    select: {
+                        id: true
                     }
                 },
                 comments: {
@@ -34,6 +42,13 @@ export class PostsService {
                 }
             }
         });
+
+        return posts.map(post => ({
+            ...post,
+            likedByMe: post.likes.length > 0,
+            likeId: post.likes.length > 0 ? post.likes[0].id : null,
+            likes: undefined
+        }));
     }
 
     async createPost(userId: string, caption: string, file?: Express.Multer.File) {
@@ -82,18 +97,28 @@ export class PostsService {
                 followingId: true
             },
         });
+
         const followingIds = following.map(f => f.followingId);
 
         if (followingIds.length === 0) {
             return [];
         }
-        return this.prisma.post.findMany({
+
+        const posts = await this.prisma.post.findMany({
             where: {
                 userId: { in: followingIds }
             },
             orderBy: { createdAt: 'desc' },
             include: {
                 user: true,
+                likes: {
+                    where: {
+                        userId: userId
+                    },
+                    select: {
+                        id: true
+                    }
+                },
                 _count: {
                     select: {
                         likes: true,
@@ -102,6 +127,13 @@ export class PostsService {
                 }
             }
         });
+
+        return posts.map(post => ({
+            ...post,
+            likedByMe: post.likes.length > 0,
+            likeId: post.likes.length > 0 ? post.likes[0].id : null,
+            likes: undefined
+        }));
     }
 
 }
