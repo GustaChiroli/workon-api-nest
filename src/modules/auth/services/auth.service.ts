@@ -36,6 +36,13 @@ export class AuthService {
     async login(email: string, password: string) {
         const user = await this.prisma.user.findUnique({
             where: { email },
+            select: {
+                id: true,
+                email: true,
+                role: true,
+                passwordHash: true,
+                imageUrl: true,
+            },
         });
 
         if (!user) throw new UnauthorizedException();
@@ -44,11 +51,11 @@ export class AuthService {
 
         if (!valid) throw new UnauthorizedException();
 
-        return this.generateToken(user.id, user.email, user.role);
+        return this.generateToken(user.id, user.email, user.role, user.imageUrl);
     }
 
-    private generateToken(id: string, email: string, role: Role) {
-        const payload = { sub: id, email, role };
+    private generateToken(id: string, email: string, role: Role, imageUrl?: string | null) {
+        const payload = { sub: id, email, role, imageUrl };
 
         return {
             access_token: this.jwtService.sign(payload),
@@ -56,6 +63,7 @@ export class AuthService {
                 id,
                 email,
                 role,
+                imageUrl,
             },
         };
     }

@@ -7,20 +7,22 @@ datasource db {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  passwordHash String
-  role         Role         @default(USER)
-  fullName     String?
-  createdAt    DateTime     @default(now())
-  weight       Decimal?     @db.Decimal(5, 2)
-  height       Decimal?     @db.Decimal(4, 2)
-  fitnessGoal  FitnessGoal?
-  posts        Post[]
-  comments     Comment[]
-  likes        Like[]
-  following    Follow[]     @relation("following")
-  followers    Follow[]     @relation("followers")
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String
+  role          Role         @default(USER)
+  fullName      String?
+  createdAt     DateTime     @default(now())
+  weight        Decimal?     @db.Decimal(5, 2)
+  height        Decimal?     @db.Decimal(4, 2)
+  imageUrl      String?
+  imagePublicId String?
+  fitnessGoal   FitnessGoal?
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  following     Follow[]     @relation("following")
+  followers     Follow[]     @relation("followers")
 }
 
 enum Role {

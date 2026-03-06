@@ -44,6 +44,7 @@ export class commentsService {
                     select: {
                         id: true,
                         fullName: true,
+                        imageUrl: true,
                     }
                 }
             }

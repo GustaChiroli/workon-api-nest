@@ -38,6 +38,7 @@ export class PostsService {
                 user: {
                     select: {
                         fullName: true,
+                        imageUrl: true,
                     }
                 }
             }
