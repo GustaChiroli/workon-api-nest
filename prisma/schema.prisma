@@ -7,22 +7,153 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(uuid())
-  email         String       @unique
+  id            String        @id @default(uuid())
+  email         String        @unique
   passwordHash  String
-  role          Role         @default(USER)
+  role          Role          @default(USER)
   fullName      String?
-  createdAt     DateTime     @default(now())
-  weight        Decimal?     @db.Decimal(5, 2)
-  height        Decimal?     @db.Decimal(4, 2)
-  imageUrl      String?
-  imagePublicId String?
+  createdAt     DateTime      @default(now())
+  height        Decimal?      @db.Decimal(4, 2)
+  weight        Decimal?      @db.Decimal(5, 2)
   fitnessGoal   FitnessGoal?
+  imagePublicId String?
+  imageUrl      String?
+  comments      Comment[]
+  following     Follow[]      @relation("following")
+  followers     Follow[]      @relation("followers")
+  likes         Like[]
   posts         Post[]
+  userWorkouts  UserWorkout[]
+}
+
+model Post {
+  id            String    @id @default(uuid())
+  userId        String
+  caption       String?
+  imageUrl      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  imagePublicId String?
   comments      Comment[]
   likes         Like[]
-  following     Follow[]     @relation("following")
-  followers     Follow[]     @relation("followers")
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  content   String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+model Follow {
+  id          String @id @default(uuid())
+  followerId  String
+  followingId String
+  follower    User   @relation("following", fields: [followerId], references: [id])
+  following   User   @relation("followers", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Exercise {
+  id               String                @id @default(uuid())
+  name             String
+  description      String?
+  muscleGroup      MuscleGroup
+  equipment        Equipment?
+  isCardio         Boolean               @default(false)
+  videoUrl         String?
+  imageUrl         String?
+  createdAt        DateTime              @default(now())
+  userExercises    UserWorkoutExercise[]
+  workoutExercises WorkoutExercise[]
+}
+
+model WorkoutGroup {
+  id                       String      @id @default(uuid())
+  name                     String
+  description              String?
+  goal                     FitnessGoal
+  difficulty               Difficulty
+  estimatedDurationMinutes Int
+  exerciseCount            Int
+  createdAt                DateTime    @default(now())
+  workouts                 Workout[]
+}
+
+model Workout {
+  id                       String            @id @default(uuid())
+  groupId                  String
+  name                     String
+  description              String?
+  order                    Int
+  estimatedDurationMinutes Int?
+  userWorkouts             UserWorkout[]
+  group                    WorkoutGroup      @relation(fields: [groupId], references: [id])
+  exercises                WorkoutExercise[]
+}
+
+model WorkoutExercise {
+  id              String   @id @default(uuid())
+  workoutId       String
+  exerciseId      String
+  order           Int
+  sets            Int?
+  reps            Int?
+  durationSeconds Int?
+  restSeconds     Int?
+  exercise        Exercise @relation(fields: [exerciseId], references: [id])
+  workout         Workout  @relation(fields: [workoutId], references: [id])
+}
+
+model UserWorkout {
+  id                   String                @id @default(uuid())
+  userId               String
+  workoutId            String
+  startedAt            DateTime
+  finishedAt           DateTime?
+  totalDurationSeconds Int?
+  createdAt            DateTime              @default(now())
+  user                 User                  @relation(fields: [userId], references: [id])
+  workout              Workout               @relation(fields: [workoutId], references: [id])
+  exercises            UserWorkoutExercise[]
+}
+
+model UserWorkoutExercise {
+  id              String      @id @default(uuid())
+  userWorkoutId   String
+  exerciseId      String
+  sets            Int?
+  reps            Int?
+  weight          Decimal?    @db.Decimal(6, 2)
+  durationSeconds Int?
+  restSeconds     Int?
+  exercise        Exercise    @relation(fields: [exerciseId], references: [id])
+  userWorkout     UserWorkout @relation(fields: [userWorkoutId], references: [id])
 }
 
 enum Role {
@@ -38,60 +169,29 @@ enum FitnessGoal {
   INCREASE_STRENGTH
 }
 
-model Post {
-  id            String   @id @default(uuid())
-  userId        String
-  caption       String?
-  imageUrl      String?
-  imagePublicId String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user     User      @relation(fields: [userId], references: [id])
-  comments Comment[]
-  likes    Like[]
-
-  @@index([userId])
-  @@index([createdAt])
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
 }
 
-model Comment {
-  id        String   @id @default(uuid())
-  userId    String
-  postId    String
-  content   String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
-
-  @@index([postId])
-  @@index([userId])
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  BICEPS
+  TRICEPS
+  CORE
+  FULL_BODY
+  CARDIO
 }
 
-model Like {
-  id        String   @id @default(uuid())
-  userId    String
-  postId    String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
-
-  @@unique([userId, postId])
-  @@index([postId])
-}
-
-model Follow {
-  id String @id @default(uuid())
-
-  followerId  String
-  followingId String
-
-  follower  User @relation("following", fields: [followerId], references: [id])
-  following User @relation("followers", fields: [followingId], references: [id])
-
-  @@unique([followerId, followingId])
-  @@index([followerId])
-  @@index([followingId])
+enum Equipment {
+  BARBELL
+  DUMBBELL
+  MACHINE
+  BODYWEIGHT
+  CABLE
+  OTHER
 }

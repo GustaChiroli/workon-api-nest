@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+import { FitnessGoal, Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +42,7 @@ export class AuthService {
                 role: true,
                 passwordHash: true,
                 imageUrl: true,
+                fitnessGoal: true
             },
         });
 
@@ -51,11 +52,11 @@ export class AuthService {
 
         if (!valid) throw new UnauthorizedException();
 
-        return this.generateToken(user.id, user.email, user.role, user.imageUrl);
+        return this.generateToken(user.id, user.email, user.role, user.imageUrl, user.fitnessGoal);
     }
 
-    private generateToken(id: string, email: string, role: Role, imageUrl?: string | null) {
-        const payload = { sub: id, email, role, imageUrl };
+    private generateToken(id: string, email: string, role: Role, imageUrl?: string | null, fitnessGoal?: FitnessGoal | null) {
+        const payload = { sub: id, email, role, imageUrl, fitnessGoal };
 
         return {
             access_token: this.jwtService.sign(payload),
@@ -64,6 +65,7 @@ export class AuthService {
                 email,
                 role,
                 imageUrl,
+                fitnessGoal
             },
         };
     }
