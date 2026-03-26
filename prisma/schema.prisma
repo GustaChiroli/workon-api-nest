@@ -24,6 +24,8 @@ model User {
   likes         Like[]
   posts         Post[]
   userWorkouts  UserWorkout[]
+
+  workoutGroups WorkoutGroup[]
 }
 
 model Post {
@@ -102,7 +104,11 @@ model WorkoutGroup {
   estimatedDurationMinutes Int
   exerciseCount            Int
   createdAt                DateTime    @default(now())
-  workouts                 Workout[]
+  createdById              String? // null = sistema
+  isPublic                 Boolean     @default(true)
+
+  createdBy User?     @relation(fields: [createdById], references: [id])
+  workouts  Workout[]
 }
 
 model Workout {
@@ -137,6 +143,7 @@ model UserWorkout {
   startedAt            DateTime
   finishedAt           DateTime?
   totalDurationSeconds Int?
+  weight               Decimal?              @db.Decimal(6, 2)
   createdAt            DateTime              @default(now())
   user                 User                  @relation(fields: [userId], references: [id])
   workout              Workout               @relation(fields: [workoutId], references: [id])
@@ -144,16 +151,23 @@ model UserWorkout {
 }
 
 model UserWorkoutExercise {
-  id              String      @id @default(uuid())
-  userWorkoutId   String
-  exerciseId      String
-  sets            Int?
-  reps            Int?
-  weight          Decimal?    @db.Decimal(6, 2)
-  durationSeconds Int?
-  restSeconds     Int?
-  exercise        Exercise    @relation(fields: [exerciseId], references: [id])
-  userWorkout     UserWorkout @relation(fields: [userWorkoutId], references: [id])
+  id                      String                   @id @default(uuid())
+  userWorkoutId           String
+  exerciseId              String
+  exercise                Exercise                 @relation(fields: [exerciseId], references: [id])
+  userWorkout             UserWorkout              @relation(fields: [userWorkoutId], references: [id])
+  userWorkoutExerciseSets UserWorkoutExerciseSet[]
+}
+
+model UserWorkoutExerciseSet {
+  id                    String   @id @default(uuid())
+  userWorkoutExerciseId String
+  setNumber             Int
+  reps                  Int?
+  weight                Decimal? @db.Decimal(6, 2)
+  durationSeconds       Int?
+
+  userWorkoutExercise UserWorkoutExercise @relation(fields: [userWorkoutExerciseId], references: [id])
 }
 
 enum Role {

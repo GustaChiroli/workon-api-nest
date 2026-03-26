@@ -3,6 +3,8 @@ import { PrismaModule } from "src/prisma/prisma.module";
 import { AuthModule } from "../auth/auth.module";
 import { WorkoutsService } from "./services/workouts.service";
 import { WorkoutsController } from "./controllers/workouts.controller";
+import { UserWorkoutController } from "./controllers/user.workout.controller";
+import { UserWorkoutService } from "./services/user.workout.service";
 
 @Module({
     imports: [
@@ -10,10 +12,12 @@ import { WorkoutsController } from "./controllers/workouts.controller";
         AuthModule,
     ],
     controllers: [
-        WorkoutsController
+        WorkoutsController,
+        UserWorkoutController
     ],
     providers: [
-        WorkoutsService
+        WorkoutsService,
+        UserWorkoutService
     ]
 })
 export class WorkoutsModule { }

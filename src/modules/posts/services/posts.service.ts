@@ -81,7 +81,8 @@ export class PostsService {
         if (userId != post.userId) throw new Error('You Can only delete your posts');
 
         if (post.imagePublicId) {
-            await this.cloudinaryService.deleteImage(post.imagePublicId);
+            var response = await this.cloudinaryService.deleteImage(post.imagePublicId);
+            console.log('\n\n\n\n\nresposta cloudinary:', response);
         }
 
         return this.prisma.post.delete({

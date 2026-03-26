@@ -18,6 +18,10 @@ const prisma = new PrismaClient({
 });
 async function main() {
 
+    await prisma.userWorkoutExerciseSet.deleteMany();
+    await prisma.userWorkoutExercise.deleteMany();
+    await prisma.userWorkout.deleteMany();
+
     await prisma.workoutExercise.deleteMany();
     await prisma.workout.deleteMany();
     await prisma.workoutGroup.deleteMany();
@@ -60,6 +64,7 @@ async function main() {
                     name: group.workouts[i].name,
                     description: group.workouts[i].description,
                     groupId: workoutGroup.id,
+                    estimatedDurationMinutes: group.workouts[i].estimatedDurationMinutes,
                     order: i,
                 },
             });
